@@ -25,16 +25,10 @@ class ChannelScanningJob:
 
     async def process_new_messages_in_channel(self, channel_id):
         cursor = await self._database.get_channel_scanning_cursor(channel_id)
-        messages, updated_cursor = await self._scan_channel_from_cursor(channel_id, cursor)
-
-        print("Calculated new cursor: " + str(updated_cursor))
-        db_updates = [] if updated_cursor is None else [updated_cursor]
-        db_updates += self._process_messages(messages)
-
-        for update in db_updates:
-            self._database.queue_update(update)
+        messages = await self._scan_channel_from_cursor(channel_id, cursor)
+        self._process_messages(messages)
+        self._move_cursor(cursor, messages)
         await self._database.commit_updates()
-
         print("Committed updates to database.")
 
     async def _scan_channel_from_cursor(self, channel_id, cursor):
@@ -52,17 +46,27 @@ class ChannelScanningJob:
         category = f"{channel.category.name}: " if channel.category else ""
         print(f"Finished scanning {category}{channel.name} ({channel.id}) for new messages. Found {len(messages)} messages.")
 
-        updated_cursor = self._create_updated_cursor(cursor, messages)
-        return messages, updated_cursor
+        return messages
 
     def _process_messages(self, messages):
         member_activity_records = self._convert_to_member_activity_records(messages)
+
         print("Calculated member activity records:")
         for record in member_activity_records:
             print(record)
 
-        db_updates = member_activity_records
-        return db_updates
+        for record in member_activity_records:
+            self._database.queue_update(record)
+
+    def _move_cursor(self, old_cursor, messages):
+        if old_cursor is None:
+            updated_cursor = ChannelScanningCursor.create_from_latest_messages(messages)
+        else:
+            updated_cursor = old_cursor.replace_with_latest_messages(messages)
+
+        print("Calculated new cursor: " + str(updated_cursor))
+        if updated_cursor is not None:
+            self._database.queue_update(updated_cursor)
 
     def _convert_to_member_activity_records(self, messages):
         record_by_user_id = dict()
@@ -76,9 +80,3 @@ class ChannelScanningJob:
             record_by_user_id[uid] = record
 
         return list(record_by_user_id.values())
-
-    def _create_updated_cursor(self, old_cursor, messages):
-        if old_cursor is None:
-            return ChannelScanningCursor.create_from_latest_messages(messages)
-        else:
-            return old_cursor.replace_with_latest_messages(messages)
