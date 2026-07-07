@@ -9,6 +9,7 @@ from .channel_pruning_config import ChannelPruningConfig
 @dataclass(frozen=True)
 class BotConfig:
     server_id: int
+    database_channel_id: int
     channel_scanning_config: ChannelScanningConfig
     channel_pruning_configs: List[ChannelPruningConfig]
     
