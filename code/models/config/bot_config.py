@@ -8,6 +8,7 @@ from .channel_pruning_config import ChannelPruningConfig
 
 @dataclass(frozen=True)
 class BotConfig:
+    dry_run: bool
     server_id: int
     database_channel_id: int
     channel_scanning_config: ChannelScanningConfig

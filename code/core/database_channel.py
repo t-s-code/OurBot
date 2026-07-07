@@ -3,17 +3,46 @@
 import re
 from datetime import datetime
 from models.database.member_activity import MemberActivityRecord, MemberActivityStatus
+from models.database.channel_scanning_cursor import ChannelScanningCursor
 
 class DatabaseChannel:
-    def __init__(self, discord_client, is_dry_run):
+    def __init__(self, discord_client, config):
         self._discord_client = discord_client
-        self._is_dry_run = is_dry_run
+        self._config = config
+        self._member_id_to_message_id = {}
+        self._discord_channel = None
 
-    async def read_database(self):
-        pass
+    async def load(self):
+        self._discord_channel = self._discord_client.get_channel(self._config.database_channel_id)
+        # TODO
+        return []
 
     async def upsert_record(self, record):
-        pass
+        text = None
+        message_id = None
+
+        if isinstance(record, MemberActivityRecord):
+            message_id = self._member_id_to_message_id.get(record.member_id, None)
+            text = self.serialize_member_activity_record(record)
+        elif isinstance(record, ChannelScanningCursor):
+            pass
+        else:
+            raise ValueError(f"Unexpected record type: {record.__class__.__name__}: {record}")
+
+        await self._write_record(text, message_id)
+
+    async def _write_record(self, text, message_id):
+        if message_id is None:
+            if self._config.dry_run:
+                print(f"Would have created new message in #bot-database: {text}")
+            else:
+                await self._discord_channel.send(text)
+        else:
+            if self._config.dry_run:
+                print(f"Would have edited message={message_id} in #bot-database: {text}")
+            else:
+                message = self._discord_channel.get_partial_message(message_id)
+                await message.edit(content=text)
 
     def serialize_member_activity_record(self, record):
         timestamp_str = record.last_seen_message_timestamp.strftime("%Y-%m-%d - %H:%M:%S UTC")

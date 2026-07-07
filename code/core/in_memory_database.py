@@ -1,7 +1,7 @@
 # core/in_memory_database.py
 
 class InMemoryDatabase:
-    def __init__(self, messages_from_database_channel):
+    def __init__(self, records):
         # TODO
         pass
 

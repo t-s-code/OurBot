@@ -2,18 +2,20 @@
 
 import asyncio
 from .in_memory_database import InMemoryDatabase
+from .database_channel import DatabaseChannel
 
 class Database:
-    def __init__(self, discord_client):
+    def __init__(self, discord_client, config):
         self._discord_client = discord_client
+        self._config = config
         self._lock = asyncio.Lock()
         self._in_memory_database = None
+        self._database_channel = DatabaseChannel(self._discord_client, self._config)
 
     async def load(self):
         async with self._lock:
-            # TODO: messages_from_db = load all messages from the #bot-database channel
-            messages_from_db = []
-            self._in_memory_database = InMemoryDatabase(messages_from_db)
+            records_from_db = await self._database_channel.load()
+            self._in_memory_database = InMemoryDatabase(records_from_db)
 
     async def get_channel_scanning_cursor(self, channel_id):
         async with self._lock:

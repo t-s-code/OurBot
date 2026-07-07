@@ -7,8 +7,7 @@ from core.database import Database
 from jobs import ChannelScanningJob
 
 class OurBot:
-    def __init__(self, is_dry_run, config):
-        self._is_dry_run = is_dry_run
+    def __init__(self, config):
         self._config = config
 
         self._config.validate()
@@ -17,7 +16,10 @@ class OurBot:
             intents=self._build_intents()
         )
 
-        self._database = Database(self._discord_client)
+        self._database = Database(
+            discord_client=self._discord_client,
+            config=self._config
+        )
 
         self._channel_scanning_job = ChannelScanningJob(
             discord_client=self._discord_client,
