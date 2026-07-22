@@ -1,6 +1,6 @@
 # models/database/channel_scanning_cursor.py
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from typing import List
 
@@ -33,7 +33,7 @@ class ChannelScanningCursor:
             return self
         else:
             last_message = messages[-1]
-            return self.replace(
+            return replace(self,
                     last_scanned_message_id=last_message.id,
                     last_scanned_message_timestamp=last_message.created_at
             )

@@ -10,7 +10,8 @@ from .channel_pruning_config import ChannelPruningConfig
 class BotConfig:
     dry_run: bool
     server_id: int
-    database_channel_id: int
+    activity_db_channel_id: int
+    scanning_db_channel_id: int
     channel_scanning_config: ChannelScanningConfig
     channel_pruning_configs: List[ChannelPruningConfig]
     
