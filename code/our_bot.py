@@ -72,7 +72,7 @@ class OurBot:
         await channel_scanning_task
 
     async def _on_message(self, message):
-        pass
+        await self._channel_scanning_job.on_message(message)
 
     # -------------------------
     # Run

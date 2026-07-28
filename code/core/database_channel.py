@@ -1,7 +1,7 @@
 # core/database_channel.py
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from models.database.member_activity import MemberActivityRecord, MemberActivityStatus
 from models.database.channel_scanning_cursor import ChannelScanningCursor
 
@@ -93,7 +93,7 @@ class DatabaseChannel:
 
         try:
             gd = match.groupdict()
-            timestamp = datetime.strptime(gd["timestamp"], self._TIMESTAMP_FORMAT)
+            timestamp = datetime.strptime(gd["timestamp"], self._TIMESTAMP_FORMAT).replace(tzinfo=timezone.utc)
             return MemberActivityRecord(
                 member_name=gd["name"],
                 member_id=int(gd["id"]),
@@ -128,7 +128,7 @@ class DatabaseChannel:
 
         try:
             gd = match.groupdict()
-            timestamp = datetime.strptime(gd["timestamp"], self._TIMESTAMP_FORMAT)
+            timestamp = datetime.strptime(gd["timestamp"], self._TIMESTAMP_FORMAT).replace(tzinfo=timezone.utc)
             return ChannelScanningCursor(
                 channel_name=gd["name"],
                 channel_id=int(gd["id"]),

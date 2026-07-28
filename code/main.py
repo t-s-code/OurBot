@@ -15,7 +15,7 @@ def main():
         activity_db_channel_id = 1524153385379430601,
         scanning_db_channel_id = 1529551272372469861,
         channel_scanning_config = ChannelScanningConfig(
-            minutes_between_scans = 5
+            minutes_between_scans = 60
         ),
         channel_pruning_configs = [
             ChannelPruningConfig(

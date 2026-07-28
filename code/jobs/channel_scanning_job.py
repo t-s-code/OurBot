@@ -2,6 +2,7 @@
 
 import asyncio
 import discord
+from datetime import datetime, timedelta, timezone
 
 from models.database.channel_scanning_cursor import ChannelScanningCursor
 from models.database.member_activity import MemberActivityRecord, MemberActivityStatus
@@ -12,16 +13,32 @@ class ChannelScanningJob:
         self._discord_client = discord_client
         self._database = database
         self._config = config
+        self._next_scan_timestamp_by_channel_id = dict()
 
     async def run(self):
         print("Scan Job started")
+        await self.scan_all_channels()
+
         while True:
-            await self.scan_all_channels()
-            await asyncio.sleep(self._config.channel_scanning_config.minutes_between_scans * 60)
+            await asyncio.sleep(5)
+
+            channel_id, scan_at = min(self._next_scan_timestamp_by_channel_id.items(), key=lambda item: item[1])
+
+            if scan_at <= datetime.now(timezone.utc):
+                del self._next_scan_timestamp_by_channel_id[channel_id]
+                await self.process_new_messages_in_channel(channel_id)
 
     async def scan_all_channels(self):
         for channel in self._get_visible_channels():
             await self.process_new_messages_in_channel(channel.id)
+
+    async def on_message(self, message):
+        self._rescan_channel_at(message.channel.id, datetime.now(timezone.utc))
+
+    def _rescan_channel_at(self, channel_id, timestamp):
+        if channel_id not in self._next_scan_timestamp_by_channel_id or timestamp < self._next_scan_timestamp_by_channel_id[channel_id]:
+            self._next_scan_timestamp_by_channel_id[channel_id] = timestamp
+        
 
     def _get_visible_channels(self):
         visible_channels = []
@@ -51,6 +68,17 @@ class ChannelScanningJob:
             print("Committed updates to database.")
         else:
             print("No updates to commit.")
+
+        await self._set_rescan_time_after_scan(channel_id)
+
+    async def _set_rescan_time_after_scan(self, channel_id):
+        delta = timedelta(minutes=self._config.channel_scanning_config.minutes_between_scans)
+        cursor = await self._database.get_channel_scanning_cursor(channel_id)
+        now = datetime.now(timezone.utc)
+        if cursor is not None and cursor.last_scanned_message_timestamp is not None and (now - cursor.last_scanned_message_timestamp) > timedelta(days=7):
+            delta = timedelta(days=1) # this channel is likely an info channel
+        rescan_time = now + delta
+        self._rescan_channel_at(channel_id, rescan_time)
 
     async def _scan_channel_from_cursor(self, channel_id, cursor):
         channel = self._discord_client.get_channel(channel_id)
