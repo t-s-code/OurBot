@@ -33,27 +33,31 @@ class ChannelScanningJob:
             await self.process_new_messages_in_channel(channel.id)
 
     async def on_message(self, message):
-        self._rescan_channel_at(message.channel.id, datetime.now(timezone.utc))
+        if self._is_channel_to_scan(message.channel):
+            self._rescan_channel_at(message.channel.id, datetime.now(timezone.utc))
 
     def _rescan_channel_at(self, channel_id, timestamp):
         if channel_id not in self._next_scan_timestamp_by_channel_id or timestamp < self._next_scan_timestamp_by_channel_id[channel_id]:
             self._next_scan_timestamp_by_channel_id[channel_id] = timestamp
         
 
+    def _is_channel_to_scan(self, channel):
+        if channel.guild.id != self._config.server_id:
+            return False
+        if channel.id in [self._config.activity_db_channel_id, self._config.scanning_db_channel_id]:
+            return False
+        if not (isinstance(channel, discord.TextChannel) or isinstance(channel, discord.ForumChannel)):
+            return False
+        permissions = channel.permissions_for(channel.guild.me)
+        if not permissions.read_messages:
+            return False
+        return True
+
     def _get_visible_channels(self):
         visible_channels = []
 
         for channel in self._discord_client.get_all_channels():
-            if channel.guild.id != self._config.server_id:
-                continue 
-            if channel.id in [self._config.activity_db_channel_id, self._config.scanning_db_channel_id]:
-                continue
-            if not (isinstance(channel, discord.TextChannel) or \
-                    isinstance(channel, discord.ForumChannel)):
-                continue 
-
-            permissions = channel.permissions_for(channel.guild.me)
-            if permissions.read_messages:
+            if self._is_channel_to_scan(channel):
                 visible_channels.append(channel)
 
         return visible_channels
@@ -84,6 +88,8 @@ class ChannelScanningJob:
         channel = self._discord_client.get_channel(channel_id)
         if not channel:
             raise ValueError(f"Our bot does not have access to channel_id={channel_id}")
+        if not self._is_channel_to_scan(channel):
+            raise ValueError(f"{channel.name} ({channel.id}) is not a channel to scan")
 
         if cursor is not None:
             after = discord.Object(id=cursor.last_scanned_message_id)
