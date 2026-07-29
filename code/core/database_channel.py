@@ -11,8 +11,7 @@ class DatabaseChannel:
     def __init__(self, discord_client, config):
         self._discord_client = discord_client
         self._config = config
-        self._member_id_to_message_id = {}
-        self._channel_id_to_message_id = {}
+        self._message_id_by_key = {}
         self._activity_db_channel = None
         self._scanning_db_channel = None
 
@@ -22,46 +21,52 @@ class DatabaseChannel:
         self._activity_db_channel = self._discord_client.get_channel(self._config.activity_db_channel_id)
         async for message in self._activity_db_channel.history(limit=None, oldest_first=True):
             record = self.deserialize_member_activity_record(message)
-            self._member_id_to_message_id[record.member_id] = message.id
+            self._message_id_by_key[record.member_id] = message.id
             records.append(record)
 
         self._scanning_db_channel = self._discord_client.get_channel(self._config.scanning_db_channel_id)
         async for message in self._scanning_db_channel.history(limit=None, oldest_first=True):
             record = self.deserialize_channel_scanning_cursor(message)
-            self._channel_id_to_message_id[record.channel_id] = message.id
+            self._message_id_by_key[record.channel_id] = message.id
             records.append(record)
 
         return records
 
     async def upsert_record(self, record):
         text = None
-        message_id = None
+        key = None
 
         if isinstance(record, MemberActivityRecord):
-            message_id = self._member_id_to_message_id.get(record.member_id, None)
+            key = record.member_id
             text = self.serialize_member_activity_record(record)
             channel = self._activity_db_channel
         elif isinstance(record, ChannelScanningCursor):
-            message_id = self._channel_id_to_message_id.get(record.channel_id, None)
+            key = record.channel_id
             text = self.serialize_channel_scanning_cursor(record)
             channel = self._scanning_db_channel
         else:
             raise ValueError(f"Unexpected record type: {record.__class__.__name__}: {record}")
 
-        await self._upsert_record(channel, text, message_id)
+        message_id = self._message_id_by_key.get(key, None)
+        created_message_id = await self._upsert_record(channel, text, message_id)
+        if created_message_id is not None:
+            self._message_id_by_key[key] = created_message_id
 
     async def _upsert_record(self, channel, text, message_id):
         if message_id is None:
             if self._config.dry_run:
                 print(f"Would have created new message in {channel.name}: {text}")
+                return None
             else:
-                await channel.send(text)
+                sent_message = await channel.send(text)
+                return sent_message.id
         else:
             if self._config.dry_run:
                 print(f"Would have edited message={message_id} in {channel.name}: {text}")
             else:
                 message = channel.get_partial_message(message_id)
                 await message.edit(content=text)
+            return None
 
     # SERIALIZERS AND DESERIALIZERS
     #
