@@ -12,8 +12,8 @@ def main():
     config = BotConfig(
         dry_run = cli_args.dry_run,
         server_id = 1356994559485153442,
-        activity_db_channel_id = 1524153385379430601,
-        scanning_db_channel_id = 1529551272372469861,
+        activity_db_channel_id = 1533468216523886682,
+        scanning_db_channel_id = 1533468301626314773,
         channel_scanning_config = ChannelScanningConfig(
             minutes_between_scans = 60
         ),

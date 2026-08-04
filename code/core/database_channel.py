@@ -56,7 +56,8 @@ class DatabaseChannel:
         if message_id is None:
             if self._config.dry_run:
                 print(f"Would have created new message in {channel.name}: {text}")
-                return None
+                import uuid
+                return uuid.uuid4()
             else:
                 sent_message = await channel.send(text)
                 return sent_message.id

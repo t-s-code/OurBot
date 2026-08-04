@@ -98,6 +98,8 @@ class ChannelScanningJob:
 
         messages = []
         async for message in channel.history(limit=None, oldest_first=True, after=after):
+            if message.author.bot:
+                continue
             messages.append(message)
 
         category = f"{channel.category.name}: " if channel.category else ""
