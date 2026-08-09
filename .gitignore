@@ -1,0 +1,4 @@
+AGENTS.md
+*.sw*
+__pycache__
+.env

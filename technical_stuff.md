@@ -6,23 +6,31 @@ These records store the bot’s memory and progress so it can safely restart. Th
 - know a member is still active even if all their messages have been deleted
 - restart without having to rescan everything from all channels
   
-### MEMBER_ACTIVITY_RECORD
+### MemberActivityRecord
 Tracks when a member posted last.
 
 ```yaml
-MEMBER_ACTIVITY_RECORD
 user_id: <discord_user_id>
 status: active | inactive
 last_seen_message_id: <discord_message_id>
 last_seen_message_timestamp: <ISO_UTC_timestamp>
 ```
 
-### CHANNEL_SCANNING_CURSOR
+### ChannelScanningCursor
 Tracks how far our bot has scanned in a channel for new messages.
 
 ```yaml
-CHANNEL_SCANNING_CURSOR
 channel_id: <discord_channel_id>
+last_scanned_message_id: <discord_message_id>
+last_scanned_message_timestamp: <ISO_UTC_timestamp>
+```
+
+### ThreadScanningCursor
+Tracks how far our bot has scanned in a thread for new messages.
+
+```yaml
+channel_id: <discord_channel_id>
+thread_id: <discord_thread_id>
 last_scanned_message_id: <discord_message_id>
 last_scanned_message_timestamp: <ISO_UTC_timestamp>
 ```
