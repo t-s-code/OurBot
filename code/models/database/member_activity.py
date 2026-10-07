@@ -26,6 +26,8 @@ class MemberActivityRecord:
 
     @staticmethod
     def create_from_message(message):
+        if not hasattr(message.author, 'guild'):
+            return None
         return MemberActivityRecord(
                 member_name=message.author.display_name,
                 member_id=message.author.id,

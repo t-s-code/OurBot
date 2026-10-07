@@ -90,6 +90,10 @@ class ChannelScanningJob:
             raise ValueError(f"Our bot does not have access to channel_id={channel_id}")
         if not self._is_channel_to_scan(channel):
             raise ValueError(f"{channel.name} ({channel.id}) is not a channel to scan")
+        is_forum = hasattr(channel, 'available_tags')
+        if is_forum:
+            print(f'skipping forum: {channel.name}')
+            return []
 
         if cursor is not None:
             after = discord.Object(id=cursor.last_scanned_message_id)
@@ -131,6 +135,8 @@ class ChannelScanningJob:
         record_by_user_id = dict()
 
         for message in messages:
+            if not hasattr(message.author, 'guild'):
+                continue
             uid = message.author.id
             if uid in record_by_user_id:
                 record = record_by_user_id[uid].replace_with_latest_message(message)
