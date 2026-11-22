@@ -25,7 +25,7 @@ def main():
             )
         ],
         # TODO 5 - implement config classes
-        member_inactivity_config = ChannelInactivityConfig(
+        member_inactivity_config = MemberInactivityConfig(
             convert_after_days = 30
         )
     )
