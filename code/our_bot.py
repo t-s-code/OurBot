@@ -29,7 +29,7 @@ class OurBot:
             config=self._config
         )
 
-        # TODO 5 - instantiate MemberInactivityJob
+        # TODO 5 - instantiate MemberInactivityJob with same arguments as job above
 
         self._register_events()
         self._register_commands()
