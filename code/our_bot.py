@@ -29,7 +29,7 @@ class OurBot:
             config=self._config
         )
 
-        # TODO 5 - instantiate MemberPruningJob
+        # TODO 5 - instantiate MemberInactivityJob
 
         self._register_events()
         self._register_commands()
@@ -84,7 +84,7 @@ class OurBot:
 
         await self._database.load()
         channel_scanning_task = asyncio.create_task(self._channel_scanning_job.run())
-        # TODO 5 - create task for MemberPruningJob
+        # TODO 5 - create task for MemberInactivityJob
 
         await channel_scanning_task
 
