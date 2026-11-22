@@ -84,7 +84,7 @@ class OurBot:
 
         await self._database.load()
         channel_scanning_task = asyncio.create_task(self._channel_scanning_job.run())
-        # TODO 5 - create task for MemberInactivityJob
+        # TODO 5 - create task for MemberInactivityJob and await 
 
         await channel_scanning_task
 
