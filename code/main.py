@@ -23,7 +23,11 @@ def main():
                 channel_id=1356995099598389338,
                 days_until_delete_messages_from_channel=3,
             )
-        ]
+        ],
+        # TODO 5 - implement config classes
+        member_inactivity_config = ChannelInactivityConfig(
+            convert_after_days = 30
+        )
     )
 
     bot = OurBot(config)
