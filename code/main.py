@@ -28,8 +28,8 @@ def main():
             convert_after_days = 30,
             # TODO 5 - add fields to config class
             member_role_id = 1357055359675797544,
-            inactive_role_id = 1376362210959560816,
-            established_role_id = 1423688892833333248,
+            inactive_member_role_id = 1376362210959560816,
+            established_member_role_id = 1423688892833333248,
         )
     )
 
