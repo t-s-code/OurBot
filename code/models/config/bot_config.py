@@ -5,6 +5,7 @@ from typing import List
 
 from .channel_scanning_config import ChannelScanningConfig 
 from .channel_pruning_config import ChannelPruningConfig
+from .member_inactivity_config import MemberInactivityConfig
 
 @dataclass(frozen=True)
 class BotConfig:
@@ -14,9 +15,11 @@ class BotConfig:
     scanning_db_channel_id: int
     channel_scanning_config: ChannelScanningConfig
     channel_pruning_configs: List[ChannelPruningConfig]
+    member_inactivity_config: MemberInactivityConfig
     
     def validate(self):
         self.channel_scanning_config.validate()
+        self.member_inactivity_config.validate()
 
         seen_ids = set()
         

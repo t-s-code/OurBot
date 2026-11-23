@@ -3,7 +3,7 @@
 import argparse, os, sys
 from dataclasses import dataclass
 from our_bot import OurBot
-from models.config import BotConfig, ChannelPruningConfig, ChannelScanningConfig
+from models.config import BotConfig, ChannelPruningConfig, ChannelScanningConfig, MemberInactivityConfig
 
 def main():
     cli_args = _read_cli_args()
@@ -23,7 +23,14 @@ def main():
                 channel_id=1356995099598389338,
                 days_until_delete_messages_from_channel=3,
             )
-        ]
+        ],
+        member_inactivity_config = MemberInactivityConfig(
+            convert_after_days = 30,
+            # TODO 5 - add fields to config class
+            member_role_id = 1357055359675797544,
+            inactive_member_role_id = 1376362210959560816,
+            established_member_role_id = 1423688892833333248,
+        )
     )
 
     bot = OurBot(config)
