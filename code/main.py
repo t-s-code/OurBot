@@ -25,7 +25,11 @@ def main():
             )
         ],
         member_inactivity_config = MemberInactivityConfig(
-            convert_after_days = 30
+            convert_after_days = 30,
+            # TODO 5 - add fields to config class
+            member_role_id = 1357055359675797544,
+            inactive_role_id = 1376362210959560816,
+            established_role_id = 1423688892833333248,
         )
     )
 
