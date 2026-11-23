@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 
 from core.database import Database
-from jobs import ChannelScanningJob
+from jobs import ChannelScanningJob, MemberInactivityJob
 
 class OurBot:
     def __init__(self, config):
@@ -29,7 +29,11 @@ class OurBot:
             config=self._config
         )
 
-        # TODO 5 - instantiate MemberInactivityJob with same arguments as job above
+        self._member_inactivity_job = MemberInactivityJob(
+            discord_client=self._discord_client,
+            database=self._database,
+            config=self._config
+        )
 
         self._register_events()
         self._register_commands()
@@ -84,9 +88,9 @@ class OurBot:
 
         await self._database.load()
         channel_scanning_task = asyncio.create_task(self._channel_scanning_job.run())
-        # TODO 5 - create task for MemberInactivityJob and await 
+        member_inactivity_task = asyncio.create_task(self._member_inactivity_job.run())
 
-        await channel_scanning_task
+        await asyncio.gather(channel_scanning_task, member_inactivity_task)
 
     async def _on_message(self, message):
         await self._channel_scanning_job.on_message(message)

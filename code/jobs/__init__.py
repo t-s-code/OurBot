@@ -1,1 +1,2 @@
 from .channel_scanning_job import ChannelScanningJob
+from .member_inactivity_job import MemberInactivityJob

@@ -3,7 +3,7 @@
 import argparse, os, sys
 from dataclasses import dataclass
 from our_bot import OurBot
-from models.config import BotConfig, ChannelPruningConfig, ChannelScanningConfig
+from models.config import BotConfig, ChannelPruningConfig, ChannelScanningConfig, MemberInactivityConfig
 
 def main():
     cli_args = _read_cli_args()
@@ -24,7 +24,6 @@ def main():
                 days_until_delete_messages_from_channel=3,
             )
         ],
-        # TODO 5 - implement config classes
         member_inactivity_config = MemberInactivityConfig(
             convert_after_days = 30
         )
